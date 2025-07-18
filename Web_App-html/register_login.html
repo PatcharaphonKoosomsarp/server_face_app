@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>เข้าสู่ระบบ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- Sidebar fixed ชิดซ้าย -->
+    <nav class="sidebar">
+        <div class="sidebar-logo" onclick="goHome()">
+            <img src="logo/kmutnblogo.jpg" alt="Logo" />
+        </div>
+        <ul>
+            <li><a href="index.html" class="active">หน้าแรก</a></li>
+            <li><a href="exam-room.html">ห้องสอบ</a></li>
+            <li><a href="other-page.html">เมนูอื่น ๆ</a></li>
+        </ul>
+    </nav>
+
+    <!-- Header fixed ด้านบน เลื่อนขอบซ้ายออก -->
+    <div class="header">
+        <div class="title-clickable" onclick="goHome()">
+            ระบบสแกนใบหน้าและติดตามการใช้ทรัพยากรคอมพิวเตอร์สำหรับการสอบในห้องปฏิบัติการ
+        </div>
+        <button class="login-button" onclick="window.location.href='register_login.html'">เข้าสู่ระบบ</button>
+    </div>
+
+    <!-- เนื้อหาหลัก -->
+    <div class="content-wrapper">
+        <main class="main-content">
+            <div class="login-box">
+                <h2>เข้าสู่ระบบ</h2>
+
+                <label for="emailInput">อีเมล</label>
+                <input type="email" id="emailInput" placeholder="กรอกอีเมลของคุณ" />
+
+                <div class="camera-section">
+                    <video id="video" width="320" height="240" autoplay muted></video>
+                    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+                </div>
+
+                <button id="startCameraBtn">เปิดกล้อง</button>
+                <button id="captureBtn" disabled>ถ่ายภาพ</button>
+
+                <div id="snapshotResult"></div>
+            </div>
+        </main>
+    </div>
+
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>
