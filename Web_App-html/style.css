@@ -21,7 +21,7 @@ body {
   background-color: #2c5282;
   color: white;
   padding-top: 20px;
-  box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,7 +71,8 @@ body {
 .header {
   position: fixed;
   top: 0;
-  left: 230px; /* 220 + 10 */
+  left: 230px;
+  /* 220 + 10 */
   right: 0;
   height: 70px;
   background-color: #2c5282;
@@ -79,10 +80,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   box-sizing: border-box;
-  border-bottom-left-radius: 10px;  /* 👈 มุมล่างซ้าย */
+  border-bottom-left-radius: 10px;
+  /* 👈 มุมล่างซ้าย */
 }
 
 .title-clickable {
@@ -116,29 +118,35 @@ body {
 
 /* เนื้อหาหลัก เลื่อนขวาและลงล่างพ้น header และ sidebar */
 .content-wrapper {
-  margin-left: 230px; /* เลื่อนขวาเท่าความกว้าง sidebar + ช่องว่าง */
-  margin-top: 70px;   /* เลื่อนลงเท่าความสูง header */
+  margin-left: 230px;
+  /* เลื่อนขวาเท่าความกว้าง sidebar + ช่องว่าง */
+  margin-top: 70px;
+  /* เลื่อนลงเท่าความสูง header */
   background-color: #ffffff;
   height: calc(100vh - 70px);
   overflow-y: auto;
   display: flex;
+  justify-content: center;
+  padding: 40px 0;
 }
 
 /* Main Content */
 .main-content {
   flex-grow: 1;
-  padding: 40px 30px;
+  padding: 0 30px;
   overflow-y: auto;
+  width: 100%;
+  max-width: 450px;
 }
 
 .login-box {
-  max-width: 400px;
-  margin: 40px auto;
+  max-width: 450px;
+  margin: 0 auto;
   padding: 30px 25px;
   border: 1px solid #cbd5e0;
   border-radius: 10px;
   background-color: #f7fafc;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
   text-align: center;
 }
@@ -149,6 +157,29 @@ body {
   color: #2c5282;
 }
 
+/* Toggle buttons */
+.toggle-buttons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.toggle-buttons button {
+  padding: 10px 20px;
+  margin: 0 5px;
+  cursor: pointer;
+  background-color: #ddd;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-buttons button.active {
+  background-color: #2c5282;
+  color: white;
+}
+
 .login-box label {
   display: block;
   margin-bottom: 6px;
@@ -157,7 +188,9 @@ body {
   text-align: left;
 }
 
-.login-box input[type="email"] {
+.login-box input[type="email"],
+.login-box input[type="text"],
+.login-box input[type="password"] {
   width: 100%;
   padding: 8px 10px;
   margin-bottom: 15px;
@@ -167,12 +200,29 @@ body {
   box-sizing: border-box;
 }
 
-.camera-section {
-  margin-bottom: 15px;
+.form-section {
+  display: none;
 }
 
-button#startCameraBtn,
-button#captureBtn {
+.form-section.active {
+  display: block;
+}
+
+.camera-section {
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+video,
+canvas {
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+button#startCameraBtn1,
+button#startCameraBtn2,
+button#captureBtn1,
+button#captureBtn2 {
   background-color: #2c5282;
   color: white;
   border: none;
@@ -185,11 +235,100 @@ button#captureBtn {
   transition: background-color 0.3s ease;
 }
 
-button#startCameraBtn:hover,
-button#captureBtn:hover {
+button#startCameraBtn1:hover,
+button#startCameraBtn2:hover,
+button#captureBtn1:hover,
+button#captureBtn2:hover {
   background-color: #1a365d;
+}
+
+button:disabled {
+  background-color: gray;
+  cursor: not-allowed;
 }
 
 #snapshotResult {
   margin-top: 15px;
+}
+
+.register-box-preview {
+  border: 2px dashed #2c5282;
+  border-radius: 8px;
+  background: #f0f4fa;
+  color: #2c5282;
+  margin-top: 18px;
+  margin-bottom: 10px;
+  padding: 28px 0;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 500;
+  min-height: 60px;
+  box-sizing: border-box;
+}
+
+canvas {
+  border: 2px solid #999;
+  border-radius: 8px;
+}
+
+.captured-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.captured-wrapper .label {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 2px 6px;
+  font-size: 14px;
+  border-radius: 4px;
+  font-family: 'Kanit', sans-serif;
+}
+button#submitRegister {
+  background-color: #2c5282;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 10px 20px;
+  margin: 5px 0 0 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%; /* ถ้าต้องการให้เต็มความกว้าง input */
+}
+
+button#submitRegister:hover {
+  background-color: #1a365d;
+}
+
+button#submitRegister:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
+
+.camera-section {
+  display: flex;
+  flex-direction: column; /* เพิ่มบรรทัดนี้ */
+  justify-content: center;
+  align-items: center;
+  width: 340px;
+  margin: 0 auto 15px;
+  background-color: #f0f4fa;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  position: relative;
+}
+
+
+.camera-section video,
+.camera-section canvas,
+.camera-section img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  border-radius: 8px;
 }
