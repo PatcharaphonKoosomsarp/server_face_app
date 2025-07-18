@@ -2,59 +2,375 @@
 <html lang="th">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>เข้าสู่ระบบ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เข้าสู่ระบบ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet" />
+  <style>
+    /* ฟอนต์ไทย */
+    body {
+      font-family: 'Kanit', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #2d3748;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Sidebar fixed ชิดซ้าย ชนขอบบน */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 220px;
+      margin-right: 10px; /* ช่องว่างขวา */
+      height: 100vh; /* เต็มความสูงหน้าจอ */
+      background-color: #2c5282;
+      color: white;
+      padding-top: 20px;
+      box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+      z-index: 1001;
+    }
+
+    /* โลโก้ด้านบน Sidebar */
+    .sidebar-logo {
+      width: 160px;
+      margin-bottom: 30px;
+      cursor: pointer;
+    }
+
+    .sidebar-logo img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* รายการเมนู */
+    .sidebar ul {
+      list-style: none;
+      padding-left: 0;
+      margin: 0;
+      width: 100%;
+    }
+
+    .sidebar ul li {
+      margin: 0;
+    }
+
+    .sidebar ul li a {
+      display: block;
+      padding: 15px 25px;
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+    }
+
+    .sidebar ul li a:hover,
+    .sidebar ul li a.active {
+      background-color: #1a365d;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 230px;
+      /* 220 + 10 */
+      right: 0;
+      height: 70px;
+      background-color: #2c5282;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      box-sizing: border-box;
+      border-bottom-left-radius: 10px;
+      /* 👈 มุมล่างซ้าย */
+    }
+
+    .title-clickable {
+      color: white;
+      font-size: 1.2rem;
+      font-weight: bold;
+      line-height: 1.5;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+
+    .title-clickable:hover {
+      opacity: 0.8;
+    }
+
+    .login-button {
+      background-color: #ffffff;
+      color: #2c5282;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .login-button:hover {
+      background-color: #e2e8f0;
+    }
+
+    /* เนื้อหาหลัก เลื่อนขวาและลงล่างพ้น header และ sidebar */
+    .content-wrapper {
+      margin-left: 230px;
+      /* เลื่อนขวาเท่าความกว้าง sidebar + ช่องว่าง */
+      margin-top: 70px;
+      /* เลื่อนลงเท่าความสูง header */
+      background-color: #ffffff;
+      height: calc(100vh - 70px);
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+      padding: 40px 0;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex-grow: 1;
+      padding: 0 30px;
+      overflow-y: auto;
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .login-box {
+      max-width: 450px;
+      margin: 0 auto;
+      padding: 30px 25px;
+      border: 1px solid #cbd5e0;
+      border-radius: 10px;
+      background-color: #f7fafc;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .login-box h2 {
+      margin-bottom: 20px;
+      font-weight: 600;
+      color: #2c5282;
+    }
+
+    /* Toggle buttons */
+    .toggle-buttons {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .toggle-buttons button {
+      padding: 10px 20px;
+      margin: 0 5px;
+      cursor: pointer;
+      background-color: #ddd;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+
+    .toggle-buttons button.active {
+      background-color: #2c5282;
+      color: white;
+    }
+
+    .login-box label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #2d3748;
+      text-align: left;
+    }
+
+    .login-box input[type="email"],
+    .login-box input[type="text"],
+    .login-box input[type="password"] {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 15px;
+      border: 1px solid #cbd5e0;
+      border-radius: 6px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .form-section {
+      display: none;
+    }
+
+    .form-section.active {
+      display: block;
+    }
+
+    .camera-section {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    video,
+    canvas {
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    button#startCameraBtn1,
+    button#startCameraBtn2,
+    button#captureBtn1,
+    button#captureBtn2 {
+      background-color: #2c5282;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button#startCameraBtn1:hover,
+    button#startCameraBtn2:hover,
+    button#captureBtn1:hover,
+    button#captureBtn2:hover {
+      background-color: #1a365d;
+    }
+
+    button:disabled {
+      background-color: gray;
+      cursor: not-allowed;
+    }
+
+    #snapshotResult {
+      margin-top: 15px;
+    }
+  </style>
 </head>
 
 <body>
 
-    <!-- Sidebar fixed ชิดซ้าย -->
-    <nav class="sidebar">
-        <div class="sidebar-logo" onclick="goHome()">
-            <img src="logo/kmutnblogo.jpg" alt="Logo" />
-        </div>
-        <ul>
-            <li><a href="index.html" class="active">หน้าแรก</a></li>
-            <li><a href="exam-room.html">ห้องสอบ</a></li>
-            <li><a href="other-page.html">เมนูอื่น ๆ</a></li>
-        </ul>
-    </nav>
-
-    <!-- Header fixed ด้านบน เลื่อนขอบซ้ายออก -->
-    <div class="header">
-        <div class="title-clickable" onclick="goHome()">
-            ระบบสแกนใบหน้าและติดตามการใช้ทรัพยากรคอมพิวเตอร์สำหรับการสอบในห้องปฏิบัติการ
-        </div>
-        <button class="login-button" onclick="window.location.href='register_login.html'">เข้าสู่ระบบ</button>
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo" onclick="goHome()">
+      <img src="logo/kmutnblogo.jpg" alt="Logo" />
     </div>
+    <ul>
+      <li><a href="index.html" class="active">หน้าแรก</a></li>
+      <li><a href="exam-room.html">ห้องสอบ</a></li>
+    </ul>
+  </nav>
 
-    <!-- เนื้อหาหลัก -->
-    <div class="content-wrapper">
-        <main class="main-content">
-            <div class="login-box">
-                <h2>เข้าสู่ระบบ</h2>
-
-                <label for="emailInput">อีเมล</label>
-                <input type="email" id="emailInput" placeholder="กรอกอีเมลของคุณ" />
-
-                <div class="camera-section">
-                    <video id="video" width="320" height="240" autoplay muted></video>
-                    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
-                </div>
-
-                <button id="startCameraBtn">เปิดกล้อง</button>
-                <button id="captureBtn" disabled>ถ่ายภาพ</button>
-
-                <div id="snapshotResult"></div>
-            </div>
-        </main>
+  <!-- Header -->
+  <div class="header">
+    <div class="title-clickable" onclick="goHome()">
+      ระบบสแกนใบหน้าและติดตามการใช้ทรัพยากรคอมพิวเตอร์สำหรับการสอบในห้องปฏิบัติการ
     </div>
+    <button class="login-button" onclick="window.location.href='register_login.html'">เข้าสู่ระบบ</button>
+  </div>
 
+  <!-- Main content -->
+  <div class="content-wrapper">
+    <main class="main-content">
+      <div class="login-box">
+        <h2>เข้าสู่ระบบ / ลงทะเบียน</h2>
 
-    <script src="js/main.js"></script>
+        <!-- Toggle Buttons -->
+        <div class="toggle-buttons">
+          <button id="loginTab" class="active" onclick="switchMode('login')">เข้าสู่ระบบ</button>
+          <button id="registerTab" onclick="switchMode('register')">ลงทะเบียน</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" class="form-section active">
+          <!-- เอา input email กับ label ออก -->
+          <div class="camera-section">
+            <video id="video1" width="320" height="240" autoplay muted></video>
+            <canvas id="canvas1" width="320" height="240" style="display:none;"></canvas>
+          </div>
+
+          <button id="startCameraBtn1">เปิดกล้อง</button>
+          <button id="captureBtn1" disabled>ถ่ายภาพ</button>
+        </div>
+
+        <!-- Register Form -->
+        <div id="registerForm" class="form-section">
+          <label for="regEmail">อีเมล</label>
+          <input type="email" id="regEmail" placeholder="s65xxxxxxxx@email.kmutnb.ac.th" />
+
+          <div class="camera-section">
+            <video id="video2" width="320" height="240" autoplay muted></video>
+            <canvas id="canvas2" width="320" height="240" style="display:none;"></canvas>
+          </div>
+
+          <button id="startCameraBtn2">เปิดกล้อง</button>
+          <button id="captureBtn2" disabled>ถ่ายภาพ</button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function switchMode(mode) {
+      document.getElementById('loginTab').classList.toggle('active', mode === 'login');
+      document.getElementById('registerTab').classList.toggle('active', mode === 'register');
+
+      document.getElementById('loginForm').classList.toggle('active', mode === 'login');
+      document.getElementById('registerForm').classList.toggle('active', mode === 'register');
+    }
+
+    // กล้องสำหรับเข้าสู่ระบบ
+    document.getElementById("startCameraBtn1").addEventListener("click", function () {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function (stream) {
+          document.getElementById("video1").srcObject = stream;
+          document.getElementById("captureBtn1").disabled = false;
+        });
+    });
+
+    document.getElementById("captureBtn1").addEventListener("click", function () {
+      let canvas = document.getElementById("canvas1");
+      let video = document.getElementById("video1");
+      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.style.display = "block";
+    });
+
+    // กล้องสำหรับลงทะเบียน
+    document.getElementById("startCameraBtn2").addEventListener("click", function () {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function (stream) {
+          document.getElementById("video2").srcObject = stream;
+          document.getElementById("captureBtn2").disabled = false;
+        });
+    });
+
+    document.getElementById("captureBtn2").addEventListener("click", function () {
+      let canvas = document.getElementById("canvas2");
+      let video = document.getElementById("video2");
+      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.style.display = "block";
+    });
+
+    // ฟังก์ชัน goHome()
+    function goHome() {
+      window.location.href = "index.html";
+    }
+  </script>
 </body>
 
 </html>
