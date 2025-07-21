@@ -7,6 +7,7 @@
   <title>เข้าสู่ระบบ</title>
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
@@ -42,138 +43,151 @@
         </div>
 
         <!-- LOGIN FORM -->
-<div id="loginForm" class="form-section active">
-  <label>สแกนใบหน้า</label>
-  <div class="camera-section">
-    <video id="video1" width="320" height="240" autoplay muted></video>
-    <canvas id="canvas1" width="320" height="240" style="display:none;"></canvas>
-    <div class="captured-image" id="previewLogin"></div>
-  </div>
-  <!-- ไม่มีปุ่มใดๆ ในส่วนนี้ -->
-</div>
+        <div id="loginForm" class="form-section active">
+          <label>สแกนใบหน้า</label>
+          <div class="camera-section">
+            <video id="video1" width="320" height="240" autoplay muted></video>
+            <canvas id="canvas1" width="320" height="240" style="display:none;"></canvas>
+            <div class="captured-image" id="previewLogin"></div>
+          </div>
+        </div>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 
-<!-- REGISTER FORM -->
-<div id="registerForm" class="form-section">
-  <label for="regEmail">อีเมล</label>
-  <input type="email" id="regEmail" placeholder="s65xxxxxxxx@email.kmutnb.ac.th" />
+        <!-- REGISTER FORM -->
+        <div id="registerForm" class="form-section">
+          <div id="g_id_onload"
+            data-client_id="227406230890-luh33aietv0v9j1cm9ll569h2ji3ct0i.apps.googleusercontent.com"
+            data-callback="handleCredentialResponse"
+            data-auto_prompt="false">
+          </div>
 
-  <label>ถ่ายภาพใบหน้า</label>
-  <div class="camera-section">
-    <video id="video2" width="320" height="240" autoplay muted></video>
-    <canvas id="canvas2" width="320" height="240" style="display:none;"></canvas>
-    <div class="captured-image" id="previewRegister"></div>
+          <div class="g_id_signin"
+            data-type="standard"
+            data-shape="rectangular"
+            data-theme="outline"
+            data-text="signup_with"
+            data-size="large"
+            data-logo_alignment="left">
+          </div>
+
+          <div id="googleUserInfo" style="margin-top: 20px;"></div>
+
+          <label>ถ่ายภาพใบหน้า</label>
+          <div class="camera-section">
+            <video id="video2" width="320" height="240" autoplay muted></video>
+            <canvas id="canvas2" width="320" height="240" style="display:none;"></canvas>
+            <div class="captured-image" id="previewRegister"></div>
+          </div>
+          <button id="captureBtn2" disabled>ถ่ายภาพ</button>
+          <br />
+          <button id="submitRegister" disabled>ลงทะเบียน</button>
+        </div>
+
+      </div>
+    </main>
   </div>
-  <button id="captureBtn2" disabled>ถ่ายภาพ</button>
-  <br />
-  <button id="submitRegister" disabled>ลงทะเบียน</button>
-</div>
 
   <script>
-   let stream1 = null;
-let stream2 = null;
-let hasCaptured2 = false;
+    let stream1 = null;
+    let stream2 = null;
+    let hasCaptured2 = false;
 
-function switchMode(mode) {
-  document.getElementById("loginTab").classList.toggle("active", mode === "login");
-  document.getElementById("registerTab").classList.toggle("active", mode === "register");
-
-  document.getElementById("loginForm").classList.toggle("active", mode === "login");
-  document.getElementById("registerForm").classList.toggle("active", mode === "register");
-
-  if (mode === "register") {
-    openCameraRegister();
-  } else {
-    closeCameraRegister();
-  }
-}
-
-function goHome() {
-  window.location.href = "index.html";
-}
-
-// เปิดกล้อง login อัตโนมัติ (ไม่มีปุ่ม)
-async function openCameraLogin() {
-  if (!stream1) {
-    try {
-      stream1 = await navigator.mediaDevices.getUserMedia({ video: true });
-      const video1 = document.getElementById("video1");
-      video1.srcObject = stream1;
-    } catch (err) {
-      console.error("ไม่สามารถเข้าถึงกล้องได้", err);
+    function switchMode(mode) {
+      document.getElementById("loginTab").classList.toggle("active", mode === "login");
+      document.getElementById("registerTab").classList.toggle("active", mode === "register");
+      document.getElementById("loginForm").classList.toggle("active", mode === "login");
+      document.getElementById("registerForm").classList.toggle("active", mode === "register");
+      if (mode === "register") {
+        openCameraRegister();
+      } else {
+        closeCameraRegister();
+      }
     }
-  }
-}
 
-// เปิดกล้องลงทะเบียนและเปิดปุ่มถ่ายภาพ
-async function openCameraRegister() {
-  if (!stream2) {
-    try {
-      stream2 = await navigator.mediaDevices.getUserMedia({ video: true });
-      const video2 = document.getElementById("video2");
-      video2.srcObject = stream2;
-      document.getElementById("captureBtn2").disabled = false;
-      document.getElementById("submitRegister").disabled = false;
-    } catch (err) {
-      console.error("ไม่สามารถเข้าถึงกล้องได้", err);
+    function goHome() {
+      window.location.href = "index.html";
     }
-  }
-}
 
-// ปิดกล้องฟอร์มลงทะเบียน
-function closeCameraRegister() {
-  if (stream2) {
-    const tracks = stream2.getTracks();
-    tracks.forEach((track) => track.stop());
-    stream2 = null;
-    const video2 = document.getElementById("video2");
-    video2.srcObject = null;
-    document.getElementById("captureBtn2").disabled = true;
-    document.getElementById("submitRegister").disabled = true;
-  }
-}
+    async function openCameraLogin() {
+      if (!stream1) {
+        try {
+          stream1 = await navigator.mediaDevices.getUserMedia({ video: true });
+          document.getElementById("video1").srcObject = stream1;
+        } catch (err) {
+          console.error("ไม่สามารถเข้าถึงกล้องได้", err);
+        }
+      }
+    }
 
-// ฟังก์ชันถ่ายภาพและแสดงใต้กล้องสำหรับลงทะเบียน
-function toggleCapture(videoId, canvasId, previewId, captureBtnId) {
-  const video = document.getElementById(videoId);
-  const canvas = document.getElementById(canvasId);
-  const preview = document.getElementById(previewId);
-  const captureBtn = document.getElementById(captureBtnId);
-  const context = canvas.getContext("2d");
+    async function openCameraRegister() {
+      if (!stream2) {
+        try {
+          stream2 = await navigator.mediaDevices.getUserMedia({ video: true });
+          document.getElementById("video2").srcObject = stream2;
+          document.getElementById("captureBtn2").disabled = false;
+          document.getElementById("submitRegister").disabled = false;
+        } catch (err) {
+          console.error("ไม่สามารถเข้าถึงกล้องได้", err);
+        }
+      }
+    }
 
-  if (!hasCaptured2) {
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const imageData = canvas.toDataURL("image/png");
+    function closeCameraRegister() {
+      if (stream2) {
+        stream2.getTracks().forEach(track => track.stop());
+        stream2 = null;
+        document.getElementById("video2").srcObject = null;
+        document.getElementById("captureBtn2").disabled = true;
+        document.getElementById("submitRegister").disabled = true;
+      }
+    }
 
-    preview.innerHTML = `
-      <div class="captured-wrapper">
-        <div class="label">ภาพถ่าย</div>
-        <img src="${imageData}" alt="captured image" />
-      </div>
-    `;
-    preview.style.display = "block";
+    function toggleCapture(videoId, canvasId, previewId, captureBtnId) {
+      const video = document.getElementById(videoId);
+      const canvas = document.getElementById(canvasId);
+      const preview = document.getElementById(previewId);
+      const captureBtn = document.getElementById(captureBtnId);
+      const context = canvas.getContext("2d");
+      if (!hasCaptured2) {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL("image/png");
+        preview.innerHTML = `<div class="captured-wrapper"><div class="label">ภาพถ่าย</div><img src="${imageData}" alt="captured image" /></div>`;
+        preview.style.display = "block";
+        captureBtn.textContent = "ถ่ายใหม่";
+        hasCaptured2 = true;
+      } else {
+        preview.innerHTML = "";
+        preview.style.display = "none";
+        captureBtn.textContent = "ถ่ายภาพ";
+        hasCaptured2 = false;
+      }
+    }
 
-    captureBtn.textContent = "ถ่ายใหม่";
-    hasCaptured2 = true;
+    window.onload = () => {
+      openCameraLogin();
+    }
 
-  } else {
-    preview.innerHTML = "";
-    preview.style.display = "none";
+    document.getElementById("captureBtn2").addEventListener("click", () =>
+      toggleCapture("video2", "canvas2", "previewRegister", "captureBtn2")
+    );
 
-    captureBtn.textContent = "ถ่ายภาพ";
-    hasCaptured2 = false;
-  }
-}
+    function handleCredentialResponse(response) {
+      const data = parseJwt(response.credential);
+      const name = data.name || `${data.given_name} ${data.family_name}`;
+      const email = data.email;
 
-// เปิดกล้อง login อัตโนมัติตอนโหลดหน้า
-window.onload = () => {
-  openCameraLogin();
-};
+      document.getElementById("googleUserInfo").innerHTML = `
+        <p><strong>ชื่อผู้ใช้:</strong> ${name}</p>
+        <p><strong>อีเมล:</strong> ${email}</p>
+      `;
+    }
 
-// Event Binding สำหรับลงทะเบียน
-document.getElementById("captureBtn2").addEventListener("click", () =>
-  toggleCapture("video2", "canvas2", "previewRegister", "captureBtn2")
-);
-
+    function parseJwt(token) {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`).join(''));
+      return JSON.parse(jsonPayload);
+    }
   </script>
 </body>
 
