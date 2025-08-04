@@ -4,47 +4,83 @@
 <head>
     <meta charset="UTF-8" />
     <title>Mediapipe Liveness Detection with Photo Capture</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- Mediapipe libs -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
     <style>
+        :root {
+            --bg:#111;
+            --card:#222;
+            --radius:10px;
+            --transition:.25s ease;
+        }
+        * { box-sizing:border-box; }
         body {
-            font-family: sans-serif;
-            background: #111;
+            font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+            background: var(--bg);
             color: #fff;
             text-align: center;
-            padding-top: 20px;
+            padding: 16px 12px;
+            margin:0;
+            min-height:100vh;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
         }
 
         canvas,
         video {
-            border-radius: 10px;
+            border-radius: var(--radius);
             transform: scaleX(-1);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .output-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto 12px;
+        }
+
+        .output_canvas {
+            width: 100%;
+            height: auto;
+            background: #000;
         }
 
         .status {
             margin-top: 12px;
-            font-size: 1.2em
+            font-size: 1rem;
+            line-height:1.3;
+            display: grid;
+            gap:6px;
+            max-width: 640px;
+            margin-left:auto;
+            margin-right:auto;
         }
 
         .completed {
-            color: #00ff00
+            color: #00ff00;
         }
 
         .not-completed {
-            color: #ff5555
+            color: #ff5555;
         }
 
         .distance-meter {
-            margin: 18px auto 0;
+            margin: 16px auto 0;
             max-width: 640px;
             padding: 12px 16px;
-            background: #222;
-            border-radius: 10px;
+            background: var(--card);
+            border-radius: var(--radius);
             box-shadow: 0 0 10px rgba(0, 0, 0, .4);
-            font-size: 1.05em;
+            font-size: 1em;
         }
 
         .distance-bar {
@@ -65,54 +101,57 @@
         }
 
         .distance-note {
-            font-size: .8em;
-            opacity: .7
+            font-size: .75em;
+            opacity: .7;
         }
 
         .photo-gallery {
             margin: 20px auto;
             max-width: 800px;
-            padding: 20px;
-            background: #222;
-            border-radius: 10px;
+            padding: 16px;
+            background: var(--card);
+            border-radius: var(--radius);
         }
 
         .photo-gallery h3 {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             color: #00ff00;
+            font-size: 1.1rem;
         }
 
         .photos-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
         }
 
         .photo-item {
             background: #333;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
+            font-size: 0.7em;
         }
 
         .photo-item img {
             width: 100%;
-            height: 120px;
+            height: 100px;
             object-fit: cover;
             border-radius: 5px;
             transform: scaleX(-1);
         }
 
         .photo-item.eye-region img {
-            height: 80px;
+            height: 60px;
             object-fit: contain;
             background: #222;
         }
 
         .photo-item .label {
-            margin-top: 5px;
-            font-size: 0.8em;
+            margin-top: 4px;
+            font-size: 0.65em;
             color: #ccc;
+            word-break: break-word;
         }
 
         .capture-flash {
@@ -138,18 +177,23 @@
         }
 
         .download-section {
-            margin: 20px 0;
+            margin: 12px 0 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
         }
 
         .download-btn {
             background: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 16px;
             border-radius: 5px;
             cursor: pointer;
-            margin: 5px;
-            font-size: 14px;
+            font-size: 13px;
+            flex: 1 1 140px;
+            min-width: 120px;
         }
 
         .download-btn:hover {
@@ -160,13 +204,21 @@
             background: #666;
             cursor: not-allowed;
         }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.2rem; }
+            .status { font-size: .9rem; }
+            .download-btn { padding: 8px 12px; font-size: 12px; }
+        }
     </style>
 </head>
 
 <body>
     <h1>🧠 Face Liveness Detection (Mediapipe) + Photo Capture</h1>
-    <video class="input_video" style="display:none;"></video>
-    <canvas class="output_canvas" width="640" height="480"></canvas>
+    <div class="output-wrapper">
+        <video class="input_video" style="display:none;"></video>
+        <canvas class="output_canvas" width="640" height="480"></canvas>
+    </div>
 
     <div class="status">
         <div id="status-eye-states">👁️ จับภาพตา: เปิด <span id="eye-open-status" class="not-completed">ยัง</span> | ปิด <span id="eye-closed-status" class="not-completed">ยัง</span></div>
@@ -206,6 +258,19 @@
         const ctx = canvasElement.getContext('2d');
         const captureCtx = captureCanvas.getContext('2d');
 
+        // ปรับขนาด internal resolution ให้รองรับการรีไซส์ (คงไว้ที่ 640x480)
+        function adjustCanvasDisplay() {
+            // CSS scaling handles responsive; internal size stays fixed for quality
+            // อาจเพิ่ม logic ถ้าต้องการเปลี่ยนความละเอียดแบบไดนามิก
+        }
+
+        window.addEventListener('resize', () => {
+            adjustCanvasDisplay();
+        });
+        window.addEventListener('orientationchange', () => {
+            setTimeout(adjustCanvasDisplay, 200);
+        });
+
         const T = {
             leftTurn: -0.35,
             rightTurn: 0.35,
@@ -232,7 +297,6 @@
         const eyeClosedStatus = document.getElementById('eye-closed-status');
 
         let baselineEyeDist = null;
-        let eyesClosed = false;
         const done = { eyeOpen: false, eyeClosed: false, left: false, right: false, up: false, down: false, close: false };
         const sequence = ['eyeOpen', 'eyeClosed', 'left', 'right', 'up', 'down', 'close'];
         let currentStep = 0;
@@ -242,7 +306,7 @@
 
         const actionLabels = {
             left: 'หันซ้าย',
-            right: 'หันขวา', 
+            right: 'หันขวา',
             up: 'เงยหน้า',
             down: 'ก้มหน้า',
             close: 'เข้าใกล้กล้อง',
@@ -250,7 +314,6 @@
             eyeClosed: 'ตาปิด'
         };
 
-        // Flash effect when capturing photo
         const showFlash = () => {
             captureFlash.classList.add('active');
             setTimeout(() => {
@@ -258,45 +321,32 @@
             }, 300);
         };
 
-        // Capture photo function
         const capturePhoto = (action) => {
-            // Draw current frame to capture canvas
             captureCtx.save();
             captureCtx.clearRect(0, 0, captureCanvas.width, captureCanvas.height);
             captureCtx.drawImage(videoElement, 0, 0, captureCanvas.width, captureCanvas.height);
             captureCtx.restore();
 
-            // Convert to image data
             const imageData = captureCanvas.toDataURL('image/png');
-            
-            // Store photo data
             const photoData = {
                 action: action,
                 label: actionLabels[action],
                 image: imageData,
                 timestamp: new Date().toLocaleString('th-TH')
             };
-            
+
             capturedPhotos.push(photoData);
-            
-            // Show flash effect
             showFlash();
-            
-            // Update gallery
             updatePhotoGallery();
-            
             console.log(`📸 บันทึกภาพ: ${actionLabels[action]}`);
         };
 
-        // Capture eye region only
         const captureEyePhoto = (action, landmarks) => {
-            // Get eye landmarks
             const leftEyeIndices = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246];
             const rightEyeIndices = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398];
-            
-            // Calculate bounding box for both eyes
+
             let minX = 1, minY = 1, maxX = 0, maxY = 0;
-            
+
             [...leftEyeIndices, ...rightEyeIndices].forEach(idx => {
                 const point = landmarks[idx];
                 if (point.x < minX) minX = point.x;
@@ -304,41 +354,31 @@
                 if (point.y < minY) minY = point.y;
                 if (point.y > maxY) maxY = point.y;
             });
-            
-            // Add padding
+
             const padding = 0.02;
             minX = Math.max(0, minX - padding);
             minY = Math.max(0, minY - padding);
             maxX = Math.min(1, maxX + padding);
             maxY = Math.min(1, maxY + padding);
-            
-            // Convert to canvas coordinates
+
             const canvasMinX = minX * captureCanvas.width;
             const canvasMinY = minY * captureCanvas.height;
             const canvasWidth = (maxX - minX) * captureCanvas.width;
             const canvasHeight = (maxY - minY) * captureCanvas.height;
-            
-            // Draw current frame to capture canvas
+
             captureCtx.save();
             captureCtx.clearRect(0, 0, captureCanvas.width, captureCanvas.height);
             captureCtx.drawImage(videoElement, 0, 0, captureCanvas.width, captureCanvas.height);
-            
-            // Extract eye region
+
             const eyeImageData = captureCtx.getImageData(canvasMinX, canvasMinY, canvasWidth, canvasHeight);
-            
-            // Create a new canvas for the eye region
             const eyeCanvas = document.createElement('canvas');
             eyeCanvas.width = canvasWidth;
             eyeCanvas.height = canvasHeight;
             const eyeCtx = eyeCanvas.getContext('2d');
             eyeCtx.putImageData(eyeImageData, 0, 0);
-            
             captureCtx.restore();
 
-            // Convert to image data
             const imageData = eyeCanvas.toDataURL('image/png');
-            
-            // Store photo data
             const photoData = {
                 action: action,
                 label: actionLabels[action],
@@ -346,19 +386,13 @@
                 timestamp: new Date().toLocaleString('th-TH'),
                 isEyeRegion: true
             };
-            
+
             capturedPhotos.push(photoData);
-            
-            // Show flash effect
             showFlash();
-            
-            // Update gallery
             updatePhotoGallery();
-            
             console.log(`👁️ บันทึกภาพตา: ${actionLabels[action]}`);
         };
 
-        // Update photo gallery display
         const updatePhotoGallery = () => {
             if (capturedPhotos.length === 0) {
                 photoGallery.style.display = 'none';
@@ -371,18 +405,16 @@
             capturedPhotos.forEach((photo, index) => {
                 const photoItem = document.createElement('div');
                 photoItem.className = photo.isEyeRegion ? 'photo-item eye-region' : 'photo-item';
-                
+
                 photoItem.innerHTML = `
                     <img src="${photo.image}" alt="${photo.label}">
                     <div class="label">${photo.label}</div>
-                    <div class="label" style="font-size: 0.7em; opacity: 0.6;">${photo.timestamp}</div>
+                    <div class="label" style="font-size: 0.6em; opacity: 0.6;">${photo.timestamp}</div>
                 `;
-                
                 photosContainer.appendChild(photoItem);
             });
         };
 
-        // Download single photo
         const downloadPhoto = (photo, filename) => {
             const link = document.createElement('a');
             link.download = filename;
@@ -390,7 +422,6 @@
             link.click();
         };
 
-        // Download all photos as ZIP (simplified - individual downloads)
         const downloadAllPhotos = () => {
             if (capturedPhotos.length === 0) {
                 alert('ไม่มีภาพให้ดาวน์โหลด');
@@ -404,8 +435,8 @@
                 }, index * 100);
             });
         };
+        window.downloadAllPhotos = downloadAllPhotos;
 
-        // Clear all photos
         const clearAllPhotos = () => {
             if (confirm('ต้องการล้างภาพทั้งหมดหรือไม่?')) {
                 capturedPhotos = [];
@@ -432,12 +463,11 @@
                 done[k] = true;
                 statusEls[k].textContent = text;
                 statusEls[k].className = 'completed';
-                
-                // Capture photo when action is completed
+
                 setTimeout(() => {
                     capturePhoto(k);
                 }, 100);
-                
+
                 currentStep++;
             }
         };
@@ -481,10 +511,8 @@
                 if (!done.down && sequence[currentStep] === 'down' && vertRatio > T.down) markDone('down');
 
                 const isFacingForward = Math.abs(offsetX) < 0.15 && vertRatio > 0.45 && vertRatio < 0.6;
-                
-                // Capture eye states (open/closed) when facing forward - in sequence order
+
                 if (isFacingForward) {
-                    // Check for eye open first (step 0)
                     if (!done.eyeOpen && sequence[currentStep] === 'eyeOpen' && ear > 0.25) {
                         eyeOpenCaptured = true;
                         markEyeDone('eyeOpen');
@@ -492,8 +520,7 @@
                             captureEyePhoto('eyeOpen', lm);
                         }, 100);
                     }
-                    
-                    // Check for eye closed second (step 1)
+
                     if (!done.eyeClosed && sequence[currentStep] === 'eyeClosed' && ear < T.blinkEAR) {
                         eyeClosedCaptured = true;
                         markEyeDone('eyeClosed');
@@ -502,9 +529,7 @@
                         }, 100);
                     }
                 }
-                
-                // No longer need blink counting, just capture eye states
-                
+
                 const eyeDist = Math.hypot(lm[33].x - lm[263].x, lm[33].y - lm[263].y);
                 if (baselineEyeDist === null) baselineEyeDist = eyeDist;
                 const ratio = eyeDist / baselineEyeDist;
@@ -538,7 +563,16 @@
         const fm = new FaceMesh({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}` });
         fm.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: .5, minTrackingConfidence: .5 });
         fm.onResults(onResults);
-        new Camera(videoElement, { onFrame: async () => { await fm.send({ image: videoElement }); }, width: 640, height: 480 }).start();
+        new Camera(videoElement, {
+            onFrame: async () => {
+                await fm.send({ image: videoElement });
+            },
+            width: 640,
+            height: 480
+        }).start();
+
+        // เปิด gallery เมื่อมีภาพแล้ว (initial call)
+        updatePhotoGallery();
     </script>
 </body>
 
