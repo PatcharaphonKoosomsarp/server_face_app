@@ -4,33 +4,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>เข้าสู่ระบบ</title>
+  <title>เข้าสู่ระบบ / ลงทะเบียน</title>
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
-  <!-- Sidebar fixed ชิดซ้าย -->
+<body>
   <nav class="sidebar">
     <div class="sidebar-logo" onclick="goHome()">
-      <img src="logo/kmutnblogo.jpg" alt="Logo" />
+      <img src="logo/kmutnblogo.jpg" alt="โลโก้ สถาบัน" />
     </div>
     <ul>
-      <li><a href="index.html" class="active">หน้าแรก</a></li>
+      <li><a href="index.html">หน้าแรก</a></li>
       <li><a href="liveness_left-right-up-down-distance.html">ลงทะเบียนใบหน้า</a></li>
       <li><a href="exam-room.html">ห้องสอบ</a></li>
     </ul>
   </nav>
 
-  <!-- Header -->
   <div class="header">
     <div class="title-clickable" onclick="goHome()">
       ระบบสแกนใบหน้าและติดตามการใช้ทรัพยากรคอมพิวเตอร์สำหรับการสอบในห้องปฏิบัติการ
     </div>
-    <button class="login-button" onclick="window.location.href='register_login.html'">เข้าสู่ระบบ</button>
+    <button class="login-button" onclick="goHome()">กลับหน้าหลัก</button>
   </div>
 
-  <!-- Main Content -->
   <div class="content-wrapper">
     <main class="main-content">
       <div class="login-box">
@@ -45,6 +43,7 @@
         <!-- LOGIN FORM -->
         <div id="loginForm" class="form-section active">
           <p>กรุณาเข้าสู่ระบบด้วยบัญชีที่ลงทะเบียนไว้</p>
+          <!-- ถ้ามีฟอร์มเพิ่มเติม เช่น อีเมล/รหัสผ่าน ก็ใส่ตรงนี้ -->
         </div>
 
         <!-- REGISTER FORM -->
@@ -70,37 +69,7 @@
     </main>
   </div>
 
-  <script>
-    function switchMode(mode) {
-      document.getElementById("loginTab").classList.toggle("active", mode === "login");
-      document.getElementById("registerTab").classList.toggle("active", mode === "register");
-      document.getElementById("loginForm").classList.toggle("active", mode === "login");
-      document.getElementById("registerForm").classList.toggle("active", mode === "register");
-    }
-
-    function goHome() {
-      window.location.href = "index.html";
-    }
-
-    function handleCredentialResponse(response) {
-      const data = parseJwt(response.credential);
-      const name = data.name || `${data.given_name} ${data.family_name}`;
-      const email = data.email;
-
-      document.getElementById("googleUserInfo").innerHTML = `
-        <p><strong>ชื่อผู้ใช้:</strong> ${name}</p>
-        <p><strong>อีเมล:</strong> ${email}</p>
-      `;
-    }
-
-    function parseJwt(token) {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
-        `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`).join(''));
-      return JSON.parse(jsonPayload);
-    }
-  </script>
+  <script src="js/main.js" defer></script>
 </body>
 
 </html>

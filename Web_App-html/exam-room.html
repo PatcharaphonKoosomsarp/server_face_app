@@ -4,26 +4,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ระบบสแกนใบหน้า</title>
+  <title>จัดการห้องสอบ</title>
   <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-  <!-- Sidebar fixed ชิดซ้าย -->
   <nav class="sidebar">
     <div class="sidebar-logo" onclick="goHome()">
-      <img src="logo/kmutnblogo.jpg" alt="Logo" />
+      <img src="logo/kmutnblogo.jpg" alt="โลโก้ สถาบัน" />
     </div>
     <ul>
-      <li><a href="index.html" class="active">หน้าแรก</a></li>
+      <li><a href="index.html">หน้าแรก</a></li>
       <li><a href="liveness_left-right-up-down-distance.html">ลงทะเบียนใบหน้า</a></li>
-      <li><a href="exam-room.html">ห้องสอบ</a></li>
+      <li><a href="exam-room.html" class="active">ห้องสอบ</a></li>
     </ul>
   </nav>
 
-  <!-- Header fixed ด้านบน เลื่อนขอบซ้ายออก -->
   <div class="header">
     <div class="title-clickable" onclick="goHome()">
       ระบบสแกนใบหน้าและติดตามการใช้ทรัพยากรคอมพิวเตอร์สำหรับการสอบในห้องปฏิบัติการ
@@ -31,7 +29,6 @@
     <button class="login-button" onclick="window.location.href='register_login.html'">เข้าสู่ระบบ</button>
   </div>
 
-  <!-- เนื้อหาหลัก -->
   <div class="content-wrapper">
     <main class="main-content">
       <h2>จัดการห้องสอบ</h2>
@@ -39,6 +36,7 @@
     </main>
   </div>
 
+  <script src="js/main.js" defer></script>
   <script src="js/main.js"></script>
 </body>
 
