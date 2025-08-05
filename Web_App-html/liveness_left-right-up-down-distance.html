@@ -1,94 +1,270 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 
 <head>
     <meta charset="UTF-8" />
-    <title>Mediapipe Liveness Detection with Photo Capture</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Mediapipe libs -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ลงทะเบียนใบหน้า - ระบบสแกนใบหน้า</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
     <style>
         :root {
-            --bg:#111;
-            --card:#222;
-            --radius:10px;
-            --transition:.25s ease;
+            --font-stack: 'Kanit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            --color-bg: #f5f7fa;
+            --color-card: #f7fafc;
+            --color-primary: #2c5282;
+            --color-primary-dark: #1a365d;
+            --color-on-primary: #ffffff;
+            --color-text: #2d3748;
+            --color-border: #cbd5e0;
+            --radius: 10px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: 0.25s cubic-bezier(.4, .0, .2, 1);
         }
-        * { box-sizing:border-box; }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-            background: var(--bg);
-            color: #fff;
-            text-align: center;
-            padding: 16px 12px;
-            margin:0;
-            min-height:100vh;
+            font-family: var(--font-stack);
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.45;
         }
 
-        h1 {
-            font-size: 1.4rem;
-            margin-bottom: 8px;
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            inset: 0 auto auto 0;
+            top: 0;
+            left: 0;
+            width: 220px;
+            height: 100vh;
+            background-color: var(--color-primary);
+            color: var(--color-on-primary);
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+            z-index: 1001;
+            gap: 5px;
+            box-sizing: border-box;
         }
 
-        canvas,
-        video {
-            border-radius: var(--radius);
-            transform: scaleX(-1);
+        .sidebar-logo {
+            width: 160px;
+            margin-bottom: 30px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo img {
+            width: 100%;
+            height: auto;
             display: block;
-            margin: 0 auto;
+            border-radius: 4px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            width: 100%;
+        }
+
+        .sidebar ul li {
+            margin: 0;
+        }
+
+        .sidebar ul li a {
+            display: block;
+            padding: 14px 24px;
+            color: var(--color-on-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color var(--transition);
+            border-left: 4px solid transparent;
+            box-sizing: border-box;
+        }
+
+        .sidebar ul li a:hover,
+        .sidebar ul li a.active {
+            background-color: var(--color-primary-dark);
+            border-left-color: #ffffff;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 230px;
+            right: 0;
+            height: 70px;
+            background-color: var(--color-primary);
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            box-sizing: border-box;
+            border-bottom-left-radius: var(--radius);
+            gap: 10px;
+        }
+
+        .title-clickable {
+            color: var(--color-on-primary);
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            line-height: 1.3;
+            text-decoration: none;
+            transition: opacity var(--transition);
+        }
+
+        .title-clickable:hover {
+            opacity: 0.85;
+        }
+
+        .login-button {
+            background-color: var(--color-on-primary);
+            color: var(--color-primary);
+            border: none;
+            padding: 10px 22px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color var(--transition), transform 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .login-button:hover {
+            background-color: #e8ebf0;
+            transform: translateY(-1px);
+        }
+
+        /* Content */
+        .content-wrapper {
+            margin-left: 230px;
+            margin-top: 70px;
+            flex: 1;
+            background-color: #ffffff;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            min-height: calc(100vh - 70px);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 0 30px;
+            width: 100%;
+            max-width: 1200px;
+            box-sizing: border-box;
+        }
+
+        /* Liveness Detection Styles */
+        .liveness-container {
+            background-color: var(--color-card);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--color-border);
+        }
+
+        .liveness-title {
+            text-align: center;
+            color: var(--color-primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 30px;
         }
 
         .output-wrapper {
             position: relative;
             width: 100%;
             max-width: 640px;
-            margin: 0 auto 12px;
+            margin: 0 auto 20px;
         }
 
         .output_canvas {
             width: 100%;
             height: auto;
             background: #000;
+            border-radius: var(--radius);
+            transform: scaleX(-1);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .input_video {
+            width: 0;
+            height: 0;
+            visibility: hidden;
         }
 
         .status {
-            margin-top: 12px;
+            margin-top: 20px;
             font-size: 1rem;
-            line-height:1.3;
+            line-height: 1.4;
             display: grid;
-            gap:6px;
+            gap: 10px;
             max-width: 640px;
-            margin-left:auto;
-            margin-right:auto;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+        }
+
+        .status>div {
+            padding: 8px 12px;
+            background-color: var(--color-bg);
+            border-radius: 6px;
+            border-left: 4px solid var(--color-border);
         }
 
         .completed {
-            color: #00ff00;
+            color: #22c55e;
+            font-weight: 600;
         }
 
         .not-completed {
-            color: #ff5555;
+            color: #ef4444;
+            font-weight: 600;
         }
 
         .distance-meter {
-            margin: 16px auto 0;
+            margin: 20px auto 0;
             max-width: 640px;
-            padding: 12px 16px;
-            background: var(--card);
+            padding: 20px;
+            background: #ffffff;
             border-radius: var(--radius);
-            box-shadow: 0 0 10px rgba(0, 0, 0, .4);
-            font-size: 1em;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--color-border);
+            font-size: 1rem;
         }
 
         .distance-bar {
             width: 100%;
             height: 12px;
             border-radius: 6px;
-            background: #444;
-            margin: 8px 0 4px;
+            background: #e5e7eb;
+            margin: 12px 0 8px;
             overflow: hidden;
         }
 
@@ -97,61 +273,66 @@
             width: 0%;
             border-radius: 6px;
             transition: width .25s ease;
-            background: linear-gradient(90deg, #ff4444, #ffaa00, #44ff44);
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #22c55e);
         }
 
         .distance-note {
-            font-size: .75em;
-            opacity: .7;
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 8px;
         }
 
         .photo-gallery {
-            margin: 20px auto;
-            max-width: 800px;
-            padding: 16px;
-            background: var(--card);
+            margin: 30px auto;
+            max-width: 1000px;
+            padding: 20px;
+            background: #ffffff;
             border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow);
         }
 
         .photo-gallery h3 {
-            margin-bottom: 12px;
-            color: #00ff00;
-            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: var(--color-primary);
+            font-size: 1.3rem;
+            font-weight: 600;
         }
 
         .photos-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
         }
 
         .photo-item {
-            background: #333;
+            background: var(--color-bg);
             border-radius: 8px;
-            padding: 8px;
+            padding: 12px;
             text-align: center;
-            font-size: 0.7em;
+            font-size: 0.875rem;
+            border: 1px solid var(--color-border);
         }
 
         .photo-item img {
             width: 100%;
-            height: 100px;
+            height: 120px;
             object-fit: cover;
-            border-radius: 5px;
+            border-radius: 6px;
             transform: scaleX(-1);
         }
 
         .photo-item.eye-region img {
-            height: 60px;
+            height: 80px;
             object-fit: contain;
-            background: #222;
+            background: var(--color-card);
         }
 
         .photo-item .label {
-            margin-top: 4px;
-            font-size: 0.65em;
-            color: #ccc;
-            word-break: break-word;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: var(--color-text);
+            font-weight: 500;
         }
 
         .capture-flash {
@@ -171,87 +352,193 @@
         }
 
         @keyframes flash {
-            0% { opacity: 0; }
-            50% { opacity: 0.8; }
-            100% { opacity: 0; }
+            0% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+
+            100% {
+                opacity: 0;
+            }
         }
 
         .download-section {
-            margin: 12px 0 0;
+            margin: 20px 0 0;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 8px;
+            gap: 12px;
         }
 
         .download-btn {
-            background: #007bff;
-            color: white;
+            background: var(--color-primary);
+            color: var(--color-on-primary);
             border: none;
-            padding: 10px 16px;
-            border-radius: 5px;
+            padding: 12px 20px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
-            flex: 1 1 140px;
-            min-width: 120px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            flex: 1 1 160px;
+            min-width: 140px;
+            transition: background-color var(--transition), transform 0.1s ease;
         }
 
         .download-btn:hover {
-            background: #0056b3;
+            background: var(--color-primary-dark);
+            transform: translateY(-1px);
         }
 
         .download-btn:disabled {
-            background: #666;
+            background: #9ca3af;
             cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .header {
+                left: 0;
+                border-bottom-left-radius: 0;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                flex-direction: row;
+                padding: 8px 12px;
+                gap: 10px;
+                overflow: visible;
+            }
+
+            .sidebar-logo {
+                width: 120px;
+                margin-bottom: 0;
+            }
+
+            .sidebar ul {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin: 0;
+            }
+
+            .sidebar ul li a {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+                border-left: none;
+                border-radius: 6px;
+            }
+
+            .content-wrapper {
+                margin-left: 0;
+                margin-top: 120px;
+                padding: 20px 15px;
+            }
+
+            .main-content {
+                padding: 0 10px;
+            }
+
+            .liveness-container {
+                padding: 20px;
+            }
+
+            .liveness-title {
+                font-size: 1.5rem;
+            }
         }
 
         @media (max-width: 480px) {
-            h1 { font-size: 1.2rem; }
-            .status { font-size: .9rem; }
-            .download-btn { padding: 8px 12px; font-size: 12px; }
+            .liveness-title {
+                font-size: 1.3rem;
+            }
+
+            .status {
+                font-size: 0.9rem;
+            }
+
+            .download-btn {
+                padding: 10px 16px;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>🧠 Face Liveness Detection (Mediapipe) + Photo Capture</h1>
-    <div class="output-wrapper">
-        <video class="input_video" style="display:none;"></video>
-        <canvas class="output_canvas" width="640" height="480"></canvas>
-    </div>
-
-    <div class="status">
-        <div id="status-eye-states">👁️ จับภาพตา: เปิด <span id="eye-open-status" class="not-completed">ยัง</span> | ปิด <span id="eye-closed-status" class="not-completed">ยัง</span></div>
-        <div id="status-left">⬅️ หันซ้าย: <span class="not-completed">ยัง</span></div>
-        <div id="status-right">➡️ หันขวา: <span class="not-completed">ยัง</span></div>
-        <div id="status-up">⬆️ เงยหน้า: <span class="not-completed">ยัง</span></div>
-        <div id="status-down">⬇️ ก้มหน้า: <span class="not-completed">ยัง</span></div>
-        <div id="status-close">🔍 เข้าใกล้กล้อง: <span class="not-completed">ยัง</span></div>
-    </div>
-
-    <div class="distance-meter">
-        ระยะห่าง: <span id="distance-text">กำลังตรวจจับ…</span>
-        <div class="distance-bar">
-            <div class="distance-fill" id="distance-fill"></div>
+    <nav class="sidebar">
+        <div class="sidebar-logo" onclick="goHome()">
+            <img src="logo/kmutnblogo.jpg" alt="โลโก้ สถาบัน King Mongkut's University of Technology North Bangkok" />
         </div>
-        <div class="distance-note">แถบเขียว = ระยะเหมาะสม</div>
-    </div>
+        <ul>
+            <li><a href="index.html">หน้าแรก</a></li>
+            <li><a href="liveness.html" class="active">ลงทะเบียนใบหน้า</a></li>
+            <li><a href="exam-room.html">ห้องสอบ</a></li>
+        </ul>
+    </nav>
 
-    <div class="photo-gallery" id="photo-gallery" style="display: none;">
-        <h3>📸 ภาพที่บันทึก</h3>
-        <div class="photos-container" id="photos-container"></div>
-        <div class="download-section">
-            <button class="download-btn" id="download-all" onclick="downloadAllPhotos()">ดาวน์โหลดทั้งหมด (ZIP)</button>
-            <button class="download-btn" onclick="clearAllPhotos()">ล้างภาพทั้งหมด</button>
+    <div class="header">
+        <div class="title-clickable" onclick="goHome()">
+            ระบบสแกนใบหน้าและติดตามการใช้ทรัพยากรคอมพิวเตอร์สำหรับการสอบในห้องปฏิบัติการ
         </div>
+        <button class="login-button" onclick="window.location.href='register_login.html'">เข้าสู่ระบบ</button>
     </div>
 
-    <div class="capture-flash" id="capture-flash"></div>
+    <div class="content-wrapper">
+        <main class="main-content">
+            <div class="liveness-container">
+                <h1 class="liveness-title">ลงทะเบียนใบหน้า (Liveness Detection)</h1>
 
-    <!-- Hidden canvas for photo capture -->
+                <div class="output-wrapper">
+                    <video class="input_video" playsinline muted autoplay></video>
+                    <canvas class="output_canvas" width="640" height="480"></canvas>
+                </div>
+
+                <div class="status">
+                    <div id="status-eye-states">👁️ จับภาพตา: ปิด <span id="eye-closed-status"
+                            class="not-completed">ยัง</span> | เปิด <span id="eye-open-status"
+                            class="not-completed">ยัง</span></div>
+                    <div id="status-left">⬅️ หันซ้าย: <span class="not-completed">ยัง</span></div>
+                    <div id="status-right">➡️ หันขวา: <span class="not-completed">ยัง</span></div>
+                    <div id="status-up">⬆️ เงยหน้า: <span class="not-completed">ยัง</span></div>
+                    <div id="status-down">⬇️ ก้มหน้า: <span class="not-completed">ยัง</span></div>
+                    <div id="status-close">🔍 เข้าใกล้กล้อง: <span class="not-completed">ยัง</span></div>
+                </div>
+
+                <div class="distance-meter">
+                    ระยะห่าง: <span id="distance-text">กำลังตรวจจับ…</span>
+                    <div class="distance-bar">
+                        <div class="distance-fill" id="distance-fill"></div>
+                    </div>
+                    <div class="distance-note">แถบเขียว = ระยะเหมาะสม</div>
+                </div>
+
+                <div class="photo-gallery" id="photo-gallery" style="display: none;">
+                    <h3>📸 ภาพที่บันทึก</h3>
+                    <div class="photos-container" id="photos-container"></div>
+                    <div class="download-section">
+                        <button class="download-btn" id="download-all" onclick="downloadAllPhotos()">ดาวน์โหลดทั้งหมด
+                            (ZIP)</button>
+                        <button class="download-btn" onclick="clearAllPhotos()">ล้างภาพทั้งหมด</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<div class="capture-flash" id="capture-flash"></div>
     <canvas id="capture-canvas" width="640" height="480" style="display: none;"></canvas>
 
     <script>
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
         const videoElement = document.querySelector('.input_video');
         const canvasElement = document.querySelector('.output_canvas');
         const captureCanvas = document.getElementById('capture-canvas');
@@ -276,7 +563,7 @@
             rightTurn: 0.35,
             up: 0.45,
             down: 0.65,
-            blinkEAR: 0.3,
+            blinkEAR: 0.1,
             closeRatio: 1.25
         };
 
@@ -297,8 +584,9 @@
         const eyeClosedStatus = document.getElementById('eye-closed-status');
 
         let baselineEyeDist = null;
+        // เปลี่ยนลำดับใน sequence ให้ 'eyeClosed' มาก่อน 'eyeOpen'
         const done = { eyeOpen: false, eyeClosed: false, left: false, right: false, up: false, down: false, close: false };
-        const sequence = ['eyeOpen', 'eyeClosed', 'left', 'right', 'up', 'down', 'close'];
+        const sequence = ['eyeClosed', 'eyeOpen', 'left', 'right', 'up', 'down', 'close']; // แก้ไขลำดับที่นี่
         let currentStep = 0;
         let capturedPhotos = [];
         let eyeOpenCaptured = false;
@@ -503,29 +791,33 @@
                 let offsetX = (nose.x - cx) / (R.x - L.x);
                 offsetX *= -1;
 
+                // ตรวจสอบเงื่อนไขตามลำดับขั้นตอนที่กำหนดใน sequence
                 if (!done.left && sequence[currentStep] === 'left' && offsetX < T.leftTurn) markDone('left');
                 if (!done.right && sequence[currentStep] === 'right' && offsetX > T.rightTurn) markDone('right');
 
                 const vertRatio = (nose.y - lm[10].y) / (lm[152].y - lm[10].y);
                 if (!done.up && sequence[currentStep] === 'up' && vertRatio < T.up) markDone('up');
+                // ก้มหน้า: ควรเป็น vertRatio > T.down (ค่า vertRatio จะเพิ่มขึ้นเมื่อก้มหน้า)
                 if (!done.down && sequence[currentStep] === 'down' && vertRatio > T.down) markDone('down');
 
-                const isFacingForward = Math.abs(offsetX) < 0.15 && vertRatio > 0.45 && vertRatio < 0.6;
+                // กำหนดให้ `isFacingForward` ใช้สำหรับการตรวจจับตาเท่านั้น
+                const isFacingForwardForEyes = Math.abs(offsetX) < 0.15 && vertRatio > 0.45 && vertRatio < 0.6;
 
-                if (isFacingForward) {
-                    if (!done.eyeOpen && sequence[currentStep] === 'eyeOpen' && ear > 0.25) {
-                        eyeOpenCaptured = true;
-                        markEyeDone('eyeOpen');
-                        setTimeout(() => {
-                            captureEyePhoto('eyeOpen', lm);
-                        }, 100);
-                    }
-
+                if (isFacingForwardForEyes) { // ใช้ isFacingForwardForEyes สำหรับการตรวจจับตาเท่านั้น
+                    // ตรวจจับการหลับตาก่อน
                     if (!done.eyeClosed && sequence[currentStep] === 'eyeClosed' && ear < T.blinkEAR) {
                         eyeClosedCaptured = true;
                         markEyeDone('eyeClosed');
                         setTimeout(() => {
                             captureEyePhoto('eyeClosed', lm);
+                        }, 100);
+                    }
+                    // ตรวจจับการลืมตา เฉพาะเมื่อหลับตาสำเร็จแล้ว
+                    else if (done.eyeClosed && !done.eyeOpen && sequence[currentStep] === 'eyeOpen' && ear > 0.25) {
+                        eyeOpenCaptured = true;
+                        markEyeDone('eyeOpen');
+                        setTimeout(() => {
+                            captureEyePhoto('eyeOpen', lm);
                         }, 100);
                     }
                 }
@@ -552,7 +844,13 @@
                     distFill.style.background = 'linear-gradient(90deg,#ff4444,#ffaa00)';
                 }
 
-                if (!done.close && ratio > T.closeRatio) markDone('close');
+                // ตรวจสอบการเข้าใกล้กล้องเฉพาะเมื่อถึงขั้นตอน 'close' เท่านั้น
+                // และควรทำเมื่อหน้าตรง (หรืออยู่ในช่วงที่เหมาะสมกับการวัดระยะ)
+                // เราจะเพิ่มเงื่อนไขว่าต้องหันหน้าตรงประมาณหนึ่ง ถึงจะพิจารณาการเข้าใกล้
+                if (!done.close && sequence[currentStep] === 'close' && Math.abs(offsetX) < 0.2 && vertRatio > 0.4 && vertRatio < 0.7 && ratio > T.closeRatio) {
+                    markDone('close');
+                }
+
             } else {
                 distText.textContent = 'ไม่พบใบหน้า';
                 distFill.style.width = '0%';
@@ -575,5 +873,4 @@
         updatePhotoGallery();
     </script>
 </body>
-
 </html>
