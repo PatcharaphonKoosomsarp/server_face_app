@@ -26,7 +26,22 @@
     <div class="title-clickable" onclick="goHome()">
       ระบบสแกนใบหน้าและติดตามการใช้ทรัพยากรคอมพิวเตอร์สำหรับการสอบในห้องปฏิบัติการ
     </div>
-    <button class="login-button" onclick="goHome()">กลับหน้าหลัก</button>
+    <div class="user-info" id="userInfo" style="display: none;">
+      <div class="user-name" onclick="toggleDropdown()">
+        <img id="user-avatar" src="" alt="avatar" />
+        <div id="user-fullname">ชื่อผู้ใช้</div>
+      </div>
+      <div class="user-dropdown" id="userDropdown">
+        <img id="dropdown-avatar" src="" alt="avatar" />
+        <div class="status">👤 นักศึกษา</div>
+        <div class="student-id" id="student-id"></div>
+        <div class="fullname-th" id="fullname-th"></div>
+        <div class="fullname-en" id="fullname-en"></div>
+        <div class="email" id="user-email"></div>
+        <button class="logout-button" onclick="logout()">ออกจากระบบ</button>
+      </div>
+    </div>
+    <button class="login-button" id="defaultLoginButton" onclick="goHome()">กลับหน้าหลัก</button>
   </div>
 
   <div class="content-wrapper">
@@ -43,17 +58,15 @@
         <!-- LOGIN FORM -->
         <div id="loginForm" class="form-section active">
           <p>กรุณาเข้าสู่ระบบด้วยบัญชีที่ลงทะเบียนไว้</p>
-          <!-- ถ้ามีฟอร์มเพิ่มเติม เช่น อีเมล/รหัสผ่าน ก็ใส่ตรงนี้ -->
         </div>
 
         <!-- REGISTER FORM -->
         <div id="registerForm" class="form-section">
           <div id="g_id_onload"
-            data-client_id="227406230890-luh33aietv0v9j1cm9ll569h2ji3ct0i.apps.googleusercontent.com"
+            data-client_id="227406230890-jbs66i8accmot5lv47k15hdk41iuhkdn.apps.googleusercontent.com"
             data-callback="handleCredentialResponse"
             data-auto_prompt="false">
           </div>
-
           <div class="g_id_signin"
             data-type="standard"
             data-shape="rectangular"
@@ -62,9 +75,7 @@
             data-size="large"
             data-logo_alignment="left">
           </div>
-          <div id="googleUserInfo" style="margin-top: 20px;"></div>
         </div>
-
       </div>
     </main>
   </div>
